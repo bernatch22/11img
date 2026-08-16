@@ -43,5 +43,22 @@ jobs:
       - run: npm install -g npm@latest
       - run: npm ci
       - run: npm run build
-      - run: npm publish --provenance --access public
+      # Idempotent on purpose: re-running a release, or tagging a version that
+      # was published by hand, must not go red. The registry checks auth, then
+      # permissions, then whether the version exists — so reaching the
+      # "cannot publish over" refusal PROVES the first two passed. An
+      # anonymous publish (missing Trusted Publisher, or an npm too old to
+      # speak OIDC) fails earlier with 404 on the PUT, and still fails here.
+      - name: Publish
         if: github.ref_type == 'tag'
+        run: |
+          set +e
+          out="$(npm publish --provenance --access public 2>&1)"
+          code=$?
+          echo "$out"
+          [ $code -eq 0 ] && exit 0
+          if echo "$out" | grep -qi "cannot publish over the previously published versions"; then
+            echo "::notice::$(node -p "require('./package.json').version") is already on the registry; auth and permissions verified, nothing to publish"
+            exit 0
+          fi
+          exit $code
