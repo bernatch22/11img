@@ -72,6 +72,14 @@ export const errPaidPlan = () =>
     'The free tier only covers the web UI. Upgrade the workspace or use a key from a paid workspace.',
   );
 
+export const errNoApiKey = () =>
+  new ImgError(
+    '11img/no-api-key',
+    'No ElevenLabs API key',
+    true,
+    'Export ELEVENLABS_API_KEY, or pass { apiKey } to ImgClient.',
+  );
+
 export const errPollTimeout = (id: string, ms: number) =>
   new ImgError(
     '11img/poll-timeout',
@@ -84,6 +92,9 @@ export const errRef = (input: string, why: string) =>
   new ImgError('11img/bad-ref', `Cannot resolve reference "${input}": ${why}`, true);
 
 export const errHttp = (what: string, cause: unknown) => {
+  // Already structured (e.g. the missing-key guard) — never re-wrap, or the
+  // hint is lost and showUser degrades to a raw stack trace.
+  if (cause instanceof ImgError) return cause;
   const status = statusOf(cause);
   if (status === 402) return errPaidPlan();
   return new ImgError(

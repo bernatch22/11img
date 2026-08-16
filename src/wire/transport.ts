@@ -3,7 +3,7 @@
  * depends on the `Wire` interface, which is the single seam mocked in tests.
  */
 import { ElevenLabsClient, ElevenLabs } from '@elevenlabs/elevenlabs-js';
-import { errHttp } from '../common/errors.js';
+import { errHttp, errNoApiKey } from '../common/errors.js';
 
 export type Residency = 'global' | 'us' | 'eu' | 'in' | 'sg';
 
@@ -37,14 +37,25 @@ export interface Wire {
 }
 
 export class ElevenWire implements Wire {
-  private readonly client: ElevenLabsClient;
+  private instance: ElevenLabsClient | undefined;
 
-  constructor(opts: WireOptions = {}) {
-    const apiKey = opts.apiKey ?? process.env.ELEVENLABS_API_KEY;
-    this.client = new ElevenLabsClient({
-      apiKey,
-      environment: BASES[opts.residency ?? 'global'],
-    });
+  constructor(private readonly opts: WireOptions = {}) {}
+
+  /**
+   * Built on first use, never in the constructor: ElevenLabsClient throws when
+   * no key is present, and offline commands (`models`, `refs ls`, `--dry-run`)
+   * must work without credentials.
+   */
+  private get client(): ElevenLabsClient {
+    if (!this.instance) {
+      const apiKey = this.opts.apiKey ?? process.env.ELEVENLABS_API_KEY;
+      if (!apiKey) throw errNoApiKey();
+      this.instance = new ElevenLabsClient({
+        apiKey,
+        environment: BASES[this.opts.residency ?? 'global'],
+      });
+    }
+    return this.instance;
   }
 
   async createImage(body: ImageRequest): Promise<{ id: string }> {
