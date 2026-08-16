@@ -1,0 +1,62 @@
+{
+  "name": "11img",
+  "version": "0.1.0",
+  "description": "Identity & permanence layer over the ElevenLabs image API: reference coercion, asset auto-promotion, generation chaining, a content-addressed batch cache, and a CLI.",
+  "type": "module",
+  "license": "MIT",
+  "author": "Bernardo Castro <me@bernardocastro.dev>",
+  "homepage": "https://github.com/bernatch22/11img#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bernatch22/11img.git"
+  },
+  "bugs": {
+    "url": "https://github.com/bernatch22/11img/issues"
+  },
+  "keywords": [
+    "elevenlabs",
+    "image-generation",
+    "gpt-image",
+    "gemini",
+    "seedream",
+    "cli",
+    "text-to-image",
+    "reference-images"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "bin": {
+    "11img": "./dist/cli/main.js"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "CHANGELOG.md",
+    "LICENSE"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "dev": "tsc -p tsconfig.json --watch",
+    "prepublishOnly": "npm run build"
+  },
+  "dependencies": {
+    "@elevenlabs/elevenlabs-js": "^2.64.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "typescript": "^5.7.0"
+  }
+}
